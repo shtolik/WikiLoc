@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">WikiLoc</string>
+    <string name="NotifMessNoConnAvailable" comment="Warning when wifi and 3g are disabled [by user]">This application requires network access. Enable mobile network or Wi-Fi to proceed.</string>
+    <string name="no_location_yet">No location yet</string>
+    <string name="no_similar_yet">No similar image titles yet</string>
+    <string name="no_articles_yet">No articles yet</string>
+    <string name="lookup">Lookup wiki</string>
+    <string name="similar_images">Similar:\n%s</string>
+    <string name="all_images">All images:\n%s</string>
+    <string name="articles">Articles:\n%s</string>
+    <string name="location">Location:\n%s</string>
+    <string name="no_images_yet">No images yet</string>
+    <string name="please_wait">Please wait</string>
+    <string name="getting_location">Retrieving location</string>
+    <string name="requesting_images">Getting image names</string>
+    <string name="requesting_more_images">Getting more image names</string>
+    <string name="requesting_articles">Getting articles</string>
+    <string name="requesting_more_articles">Getting more articles</string>
+    <string name="location_didnt_change">. It didn\'t change since last request. Skipping.</string>
+    <string name="need_internet">Application needs a location permission to be able to do anything useful</string>
+
+</resources>

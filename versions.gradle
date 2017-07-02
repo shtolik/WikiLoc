@@ -1,0 +1,14 @@
+ext {
+    compileSdkVersion = 'android-25'
+    targetSdkVersion = 25
+    minSdkVersion = 14
+    buildToolsVersion = '25.0.2'
+    supportLibVersion = '25.2.0'
+    stethoVersion = '1.4.1'
+    daggerVersion = '2.7'
+    butterKnifeVersion = '8.4.0'
+    retrofit = '2.1.0'
+    okhttp = '3.5.0'
+    mockitoVersion = '2.7.22'
+    apacheCommonsLibVersion = '3.5'
+}

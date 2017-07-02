@@ -1,0 +1,132 @@
+apply plugin: 'me.tatarka.retrolambda'
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
+
+    defaultConfig {
+        applicationId "mobi.stolicus.wikiloc"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+
+    dexOptions {
+        javaMaxHeapSize "4g"
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    signingConfigs {
+        release //will be defined lower from release.properties
+        debug {
+            storeFile file("../keystores/debugkeys/debug.keystore")
+            keyAlias "androiddebugkey"
+            storePassword "android"
+            keyPassword "android"
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            debuggable false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+            proguardFiles getDefaultProguardFile('proguard-android.txt'),
+                    'proguard-rules.pro'
+            testProguardFiles('proguard-test-rules.pro')
+        }
+        debug {
+            debuggable true
+            buildConfigField "Boolean", "IS_DEBUG", "true"
+            signingConfig signingConfigs.debug
+            proguardFiles getDefaultProguardFile('proguard-android.txt'),
+                    'proguard-rules.pro'
+            testProguardFiles('proguard-test-rules.pro')
+        }
+    }
+
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
+
+    packagingOptions {
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/LICENSE'
+    }
+}
+
+def props = new Properties()
+
+props.load(new FileInputStream(rootProject.file("release.properties")))
+android.signingConfigs.release.storeFile rootProject.file(props.keyStore)
+android.signingConfigs.release.storePassword props.keyStorePassword
+android.signingConfigs.release.keyAlias props.keyAlias
+android.signingConfigs.release.keyPassword props.keyAliasPassword
+
+dependencies {
+//    compile fileTree(dir: 'libs', include: ['*.jar'])
+
+    //appCompat
+    compile("com.android.support:appcompat-v7:$rootProject.ext.supportLibVersion")
+    compile("com.android.support:support-annotations:$rootProject.ext.supportLibVersion")
+    compile("com.android.support:design:$rootProject.ext.supportLibVersion")
+
+    //common utils
+    compile("org.apache.commons:commons-lang3:$rootProject.ext.apacheCommonsLibVersion")
+
+    //math
+    compile("org.apache.commons:commons-math3:$rootProject.ext.apacheCommonsLibVersion")
+
+    //debugging
+    compile("com.facebook.stetho:stetho:$rootProject.ext.stethoVersion") {
+//        exclude module: 'jsr305'
+    }
+    debugCompile 'com.squareup.leakcanary:leakcanary-android:1.4-beta2'
+    releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.4-beta2'
+
+    //rx
+    compile 'com.jakewharton.rxbinding:rxbinding:0.4.0' // RxBinding
+
+    //retrofit
+    compile "com.squareup.retrofit2:retrofit:$rootProject.ext.retrofit"
+    compile "com.squareup.retrofit2:converter-gson:$rootProject.ext.retrofit"
+    compile "com.squareup.retrofit2:adapter-rxjava:$rootProject.ext.retrofit"
+
+    //okhttp
+    compile("com.squareup.okhttp3:okhttp:$rootProject.ext.okhttp")
+    compile("com.squareup.okhttp3:logging-interceptor:$rootProject.ext.okhttp")
+
+    //DI
+    compile("com.google.dagger:dagger:$rootProject.ext.daggerVersion")
+    annotationProcessor("com.google.dagger:dagger-compiler:$rootProject.ext.daggerVersion")
+
+    //logging
+    compile 'com.noveogroup.android:android-logger:1.3.5'
+
+    //butterknife
+    compile("com.jakewharton:butterknife:$rootProject.ext.butterKnifeVersion")
+    annotationProcessor("com.jakewharton:butterknife-compiler:$rootProject.ext.butterKnifeVersion")
+
+    //fast location with fuzzy provider (but doesn't work in emulator)
+    compile 'com.google.android.gms:play-services-location:11.0.1'
+
+    //testing
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+
+    // required if you want to use Mockito for unit tests
+    testCompile("org.mockito:mockito-core:$rootProject.ext.mockitoVersion")
+    // required if you want to use Mockito for Android tests
+    androidTestCompile("org.mockito:mockito-android:$rootProject.ext.mockitoVersion")
+
+    testCompile 'junit:junit:4.12'
+}
