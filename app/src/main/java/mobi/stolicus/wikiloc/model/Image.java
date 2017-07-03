@@ -3,8 +3,9 @@ package mobi.stolicus.wikiloc.model;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
-import com.squareup.haha.guava.collect.ArrayListMultimap;
-import com.squareup.haha.guava.collect.Multimap;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import mobi.stolicus.wikiloc.support.SimilarityHelper;
 
@@ -19,7 +20,7 @@ public class Image {
 
 	private String stripped = "";
 
-	private Multimap<String, Double> evaluations = ArrayListMultimap.create();
+	private Map<String, Double> evaluations = new HashMap<>();
 
 	private Double averageCalculated = null;
 
@@ -35,11 +36,11 @@ public class Image {
 		this.stripped = stripped;
 	}
 
-	public Multimap<String, Double> getEvaluations() {
+	public Map<String, Double> getEvaluations() {
 		return evaluations;
 	}
 
-	public void setEvaluations(Multimap<String, Double> evaluations) {
+	public void setEvaluations(Map<String, Double> evaluations) {
 		this.evaluations = evaluations;
 	}
 

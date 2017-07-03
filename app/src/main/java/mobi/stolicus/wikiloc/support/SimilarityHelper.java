@@ -2,9 +2,6 @@ package mobi.stolicus.wikiloc.support;
 
 import android.support.annotation.NonNull;
 
-import com.squareup.haha.guava.collect.ArrayListMultimap;
-import com.squareup.haha.guava.collect.Multimap;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.math3.stat.StatUtils;
@@ -14,7 +11,9 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import mobi.stolicus.wikiloc.BuildConfig;
@@ -49,7 +48,7 @@ public class SimilarityHelper {
 		}
 
 		for (Image image : allImages) {
-			Multimap<String, Double> map = calculateDistance(image, allImages);
+			Map<String, Double> map = calculateDistance(image, allImages);
 			image.setEvaluations(map);
 			if (measure != null)
 				logger.debug("/calculateSimilarity/took {}", measure);
@@ -64,18 +63,18 @@ public class SimilarityHelper {
 	 * @param allImages    all images (some of which are alrady evaluated)
 	 * @return map of all images evaluated
 	 */
-	private static synchronized Multimap<String, Double> calculateDistance(Image currentImage, Set<Image> allImages) {
-		Multimap<String, Double> map = ArrayListMultimap.create();
+	private static synchronized Map<String, Double> calculateDistance(Image currentImage, Set<Image> allImages) {
+		Map<String, Double> map = new HashMap<>();
 
 		int existingEvals = 0;
 		int newEvals = 0;
 		for (Image otherImage : allImages) {
 			// can check if distance already calculated in the otherImage
-			Collection<Double> otherDistanceToCurrentCollection = otherImage.getEvaluations().get(currentImage.getStripped());
-			if (!otherDistanceToCurrentCollection.isEmpty()) {
+			Double otherDistanceToCurrentCollection = otherImage.getEvaluations().get(currentImage.getStripped());
+			if (otherDistanceToCurrentCollection != null) {
 				//if there is distance already calculated for current stripped image name,
 				// then picking first even if there are more than one (unlikely but possible if there are two same files)
-				map.put(otherImage.getStripped(), otherDistanceToCurrentCollection.iterator().next());
+				map.put(otherImage.getStripped(), otherDistanceToCurrentCollection);
 				existingEvals++;
 			} else {
 				double distance = StringUtils.getLevenshteinDistance(currentImage.getStripped(), otherImage.getStripped());
