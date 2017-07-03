@@ -3,7 +3,7 @@ package mobi.stolicus.wikiloc.di;
 import javax.inject.Singleton;
 
 import dagger.Component;
-import mobi.stolicus.wikiloc.ui.MainActivity;
+import mobi.stolicus.wikiloc.MainActivity;
 
 @Singleton
 @Component(modules = {ContextModule.class, WikiModule.class, LocationModule.class})

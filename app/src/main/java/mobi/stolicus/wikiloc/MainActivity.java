@@ -1,18 +1,14 @@
-package mobi.stolicus.wikiloc.ui;
+package mobi.stolicus.wikiloc;
 
 import android.Manifest;
 import android.app.ProgressDialog;
-import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 
@@ -29,15 +25,13 @@ import javax.inject.Inject;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import mobi.stolicus.wikiloc.BuildConfig;
-import mobi.stolicus.wikiloc.R;
-import mobi.stolicus.wikiloc.WikiLocApp;
 import mobi.stolicus.wikiloc.model.Continue;
 import mobi.stolicus.wikiloc.model.Image;
 import mobi.stolicus.wikiloc.model.WikiArticlesResponse;
 import mobi.stolicus.wikiloc.model.WikiImagesResponse;
 import mobi.stolicus.wikiloc.network.WikiService;
 import mobi.stolicus.wikiloc.support.ModelHelper;
+import mobi.stolicus.wikiloc.support.PermissionHelper;
 import mobi.stolicus.wikiloc.support.SimilarityHelper;
 import rx.Observable;
 import rx.Subscription;
@@ -65,8 +59,11 @@ public class MainActivity extends AppCompatActivity {
 
 	@BindView(R.id.all_images)
 	public TextView tvAllImages;
+
 	ProgressDialog progressDialog;
+
 	private CompositeSubscription compositeSubscription = new CompositeSubscription();
+
 	private Location lastLocation = null;
 	private Set<Image> allImages = new HashSet<>();
 	private Set<Integer> imageIds = new HashSet<>();
@@ -74,8 +71,11 @@ public class MainActivity extends AppCompatActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
 		setContentView(R.layout.activity_main);
+
 		ButterKnife.bind(this);
+
 		WikiLocApp.get(this).getAppComponent().inject(this);
 
 		progressDialog = new ProgressDialog(this);
@@ -85,6 +85,9 @@ public class MainActivity extends AppCompatActivity {
 		progressDialog.setCancelable(true);
 	}
 
+	/**
+	 * starting process on resume
+	 */
 	@Override
 	protected void onResume() {
 		super.onResume();
@@ -100,27 +103,30 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	/**
+	 * need to release subscription on destroy
+	 */
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		compositeSubscription.clear();
+	}
+
+	/**
 	 * @param reset whether to reset data to start a new request from scratch
 	 */
 	public void startLookup(boolean reset) {
 		if (BuildConfig.IS_DEBUG && reset) {
+			logger.info("/startLookup/resetting cached values on user manually requesting new data");
 			lastLocation = null;
 			allImages = new HashSet<>();
 			imageIds = new HashSet<>();
 		}
 
-		if (ContextCompat.checkSelfPermission(this,
-				Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-			ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSIONS_CODE);
-		} else {
+		if (PermissionHelper.checkPermissionAndRequestIfNeeded(this, Manifest.permission.ACCESS_FINE_LOCATION, PERMISSIONS_CODE)) {
+			//requesting location if permission already granted, else it will be requested in onRequestPermissionResult
 			requestLocation();
 		}
-	}
 
-	@Override
-	protected void onDestroy() {
-		super.onDestroy();
-		compositeSubscription.clear();
 	}
 
 	/**
@@ -158,11 +164,8 @@ public class MainActivity extends AppCompatActivity {
 	 * @param location last known location
 	 */
 	private void startWikiRequest(Location location) {
-		if (ContextCompat.checkSelfPermission(this,
-				Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) {
-			//but no internet permission yet
-			ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.INTERNET}, PERMISSIONS_CODE);
-		} else {
+		if (PermissionHelper.checkPermissionAndRequestIfNeeded(this, Manifest.permission.INTERNET, PERMISSIONS_CODE)) {
+			//requesting articles if internet permission already granted, else it will be requested in onRequestPermissionResult
 			requestWikiArticles(location, null);
 		}
 	}
@@ -332,21 +335,11 @@ public class MainActivity extends AppCompatActivity {
 	@Override
 	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-		if (requestCode != PERMISSIONS_CODE) {
-			return;
-		}
-		for (int i = 0; i < permissions.length; i++) {
-			String permission = permissions[i];
-			int grantResult = grantResults[i];
-			if (permission.equals(Manifest.permission.ACCESS_FINE_LOCATION) && grantResult == PackageManager.PERMISSION_GRANTED) {
-				requestLocation();
-			} else if (permission.equals(Manifest.permission.INTERNET) && grantResult == PackageManager.PERMISSION_GRANTED) {
-				if (lastLocation != null)
-					requestWikiArticles(lastLocation, null);
-			} else {
-				Toast.makeText(this, R.string.need_internet, Toast.LENGTH_LONG).show();
-			}
+		if (PermissionHelper.checkPermissionResult(requestCode, permissions, grantResults, Manifest.permission.ACCESS_FINE_LOCATION)) {
+			requestLocation();
+		} else if (PermissionHelper.checkPermissionResult(requestCode, permissions, grantResults, Manifest.permission.INTERNET)) {
+			if (lastLocation != null)
+				requestWikiArticles(lastLocation, null);
 		}
 	}
 }
