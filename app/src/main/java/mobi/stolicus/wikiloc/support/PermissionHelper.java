@@ -34,8 +34,8 @@ public class PermissionHelper {
 	 */
 	public static boolean checkPermissionAndRequestIfNeeded(Activity activity, String permissionToCheck, int permissionsCode) {
 		if (ContextCompat.checkSelfPermission(activity,
-				Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-			ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, permissionsCode);
+				permissionToCheck) != PackageManager.PERMISSION_GRANTED) {
+			ActivityCompat.requestPermissions(activity, new String[]{permissionToCheck}, permissionsCode);
 		} else {
 			return true;
 		}
